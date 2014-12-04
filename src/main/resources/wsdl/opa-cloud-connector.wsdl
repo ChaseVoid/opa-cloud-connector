@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:tns="http://xmlns.oracle.com/policyautomation/hub/12.0/metadata/types"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="OpaDataService"
+                  targetNamespace="http://xmlns.oracle.com/policyautomation/hub/12.0/metadata/types">
+
+    <wsdl:documentation>
+        The web service described by this WSDL is expected when the address for the web service is provided
+        in the OPA hub. GetMetadata is crucial for any web service. Load and Save requests and responses
+        must be understood if the web service is intended to communicate between web-determinations (an
+        Interview) and the data source.
+    </wsdl:documentation>
+
+    <wsdl:types>
+        <xsd:schema
+                targetNamespace="http://xmlns.oracle.com/policyautomation/hub/12.0/metadata/types"
+                xmlns="http://xmlns.oracle.com/policyautomation/hub/12.0/metadata/types"
+                xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="12.0.20140613">
+
+            <!-- Data Types -->
+            <xsd:complexType name="SeedDataDescription">
+                <xsd:sequence>
+                    <xsd:element name="table" type="Table" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <xsd:complexType name="LoadData">
+                <xsd:sequence>
+                    <xsd:element name="table" type="DataTable" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <xsd:complexType name="UpdateData">
+                <xsd:sequence>
+                    <xsd:element name="table" type="UpdateTable" minOccurs="0" maxOccurs="unbounded" />
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <xsd:complexType name="SubmitData">
+                <xsd:sequence>
+                    <xsd:element name="table" type="SubmitTable" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <!-- Table Types -->
+            <xsd:complexType name="Table">
+                <xsd:sequence>
+                    <xsd:element name="field" type="Field" minOccurs="0" maxOccurs="unbounded"/>
+                    <xsd:element name="link" type="Link" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+                <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+
+            <xsd:complexType name="DataTable">
+                <xsd:sequence>
+                    <xsd:element name="row" type="DataRow" minOccurs="1" maxOccurs="unbounded"/>
+                </xsd:sequence>
+                <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+
+            <xsd:complexType name="UpdateTable">
+                <xsd:sequence>
+                    <xsd:element name="row" type="UpdateRow" minOccurs="1" maxOccurs="unbounded" />
+                </xsd:sequence>
+                <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+
+            <xsd:complexType name="SubmitTable">
+                <xsd:sequence>
+                    <xsd:element name="row" type="SubmitRow" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+                <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+
+            <!-- Row Types -->
+            <xsd:simpleType name="RowAction">
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="create"/>
+                    <xsd:enumeration value="update"/>
+                    <xsd:enumeration value="delete"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+
+            <xsd:complexType name="DataRow">
+                <xsd:sequence>
+                    <xsd:element name="field" type="DataField" minOccurs="0" maxOccurs="unbounded"/>
+                    <xsd:element name="link" type="DataLink" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+                <xsd:attribute name="id" type="xsd:string" use="required" />
+            </xsd:complexType>
+
+            <xsd:complexType name="UpdateRow">
+                <xsd:complexContent>
+                    <xsd:extension base="DataRow">
+                        <xsd:attribute name="orig-id" type="xsd:string" use="optional" />
+                    </xsd:extension>
+                </xsd:complexContent>
+            </xsd:complexType>
+
+            <xsd:complexType name="SubmitRow">
+                <xsd:sequence>
+                    <xsd:element name="input-field" type="DataField" minOccurs="0" maxOccurs="unbounded"/>
+                    <xsd:element name="output-field" type="DataField" minOccurs="0" maxOccurs="unbounded"/>
+                    <xsd:element name="link" type="DataLink" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+                <xsd:attribute name="id" type="xsd:string" use="required" />
+                <xsd:attribute name="action" type="RowAction" use="required"/>
+            </xsd:complexType>
+
+            <!-- Field Types -->
+            <xsd:complexType name="Field">
+                <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+
+            <xsd:complexType name="DataField">
+                <xsd:complexContent>
+                    <xsd:extension base="Field">
+                        <xsd:sequence>
+                            <xsd:choice minOccurs="0" maxOccurs="1">
+                                <xsd:element name="boolean-val" type="xsd:boolean"/>
+                                <xsd:element name="date-val" type="xsd:date"/>
+                                <xsd:element name="datetime-val" type="xsd:dateTime"/>
+                                <xsd:element name="time-val" type="xsd:time"/>
+                                <xsd:element name="number-val" type="xsd:decimal"/>
+                                <xsd:element name="text-val" type="xsd:string"/>
+                                <xsd:element name="uncertain-val" type="UncertainValue"/>
+                                <xsd:element name="unknown-val" type="UnknownValue"/>
+                            </xsd:choice>
+                            <xsd:element name="change-point" type="ChangePoint" minOccurs="0" maxOccurs="unbounded"/>
+                        </xsd:sequence>
+                    </xsd:extension>
+                </xsd:complexContent>
+            </xsd:complexType>
+
+            <!-- Link Types -->
+            <xsd:complexType name="Link">
+                <xsd:attribute name="name" type="xsd:string" use="required"/>
+                <xsd:attribute name="target" type="xsd:string" use="required"/>
+            </xsd:complexType>
+
+            <xsd:complexType name="DataLink">
+                <xsd:complexContent>
+                    <xsd:extension base="Link">
+                        <xsd:sequence>
+                            <xsd:element name="ref" type="LinkRef" minOccurs="0" maxOccurs="unbounded"/>
+                        </xsd:sequence>
+                    </xsd:extension>
+                </xsd:complexContent>
+            </xsd:complexType>
+
+            <xsd:complexType name="LinkRef">
+                <xsd:attribute name="id" type="xsd:string" use="required"/>
+            </xsd:complexType>
+
+            <!-- Field Value Types -->
+            <xsd:complexType name="UnknownValue"/>
+            <xsd:complexType name="UncertainValue"/>
+
+            <xsd:complexType name="ChangePoint">
+                <xsd:choice minOccurs="1" maxOccurs="1">
+                    <xsd:element name="boolean-val" type="xsd:boolean"/>
+                    <xsd:element name="date-val" type="xsd:date"/>
+                    <xsd:element name="datetime-val" type="xsd:dateTime"/>
+                    <xsd:element name="time-val" type="xsd:time"/>
+                    <xsd:element name="number-val" type="xsd:decimal"/>
+                    <xsd:element name="text-val" type="xsd:string"/>
+                    <xsd:element name="uncertain-val" type="UncertainValue"/>
+                    <xsd:element name="unknown-val" type="UnknownValue"/>
+                </xsd:choice>
+                <xsd:attribute name="date" type="xsd:date"/>
+            </xsd:complexType>
+
+            <!-- Attachment Types -->
+            <xsd:complexType name="AttachmentList">
+                <xsd:sequence>
+                    <xsd:element name="attachment" type="Attachment" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <xsd:complexType name="Attachment">
+                <xsd:simpleContent>
+                    <xsd:extension base="xsd:string">
+                        <xsd:attribute name="name" type="xsd:string" use="optional" />
+                        <xsd:attribute name="filename" type="xsd:string" use="required"/>
+                        <xsd:attribute name="description" type="xsd:string" use="optional" />
+                    </xsd:extension>
+                </xsd:simpleContent>
+            </xsd:complexType>
+
+            <!-- Request context Types -->
+            <xsd:complexType name="RequestContext">
+                <xsd:sequence>
+                    <xsd:element name="parameter" type="RequestContextParam" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <xsd:complexType name="RequestContextParam">
+                <xsd:attribute name="name" type="xsd:string" use="required"/>
+                <xsd:attribute name="value" type="xsd:string" use="required"/>
+            </xsd:complexType>
+
+            <!-- CHECK ALIVE - SIMPLE PING AND CREDENTIAL CHECK -->
+            <xsd:element name="check-alive-request">
+                <xsd:complexType/>
+            </xsd:element>
+
+            <xsd:element name="check-alive-response">
+                <xsd:complexType/>
+            </xsd:element>
+
+            <!-- GET META DATA -->
+            <xsd:element name="get-metadata-request">
+                <xsd:complexType/>
+            </xsd:element>
+
+            <xsd:element name="get-metadata-response">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="Table" type="MetaTable" minOccurs="0" maxOccurs="unbounded"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:complexType name="MetaTable">
+                <xsd:sequence>
+                    <xsd:element name="Field" type="MetaField" minOccurs="0" maxOccurs="unbounded"/>
+                    <xsd:element name="Link" type="MetaLink" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+                <xsd:attribute name="name" type="xsd:string" use="required"/>
+                <xsd:attribute name="can-be-input" type="xsd:boolean" use="required"/>
+                <xsd:attribute name="can-be-output" type="xsd:boolean" use="required"/>
+                <xsd:attribute name="existing-rows" type="xsd:long" use="optional"/>
+            </xsd:complexType>
+
+            <xsd:complexType name="MetaField">
+                <xsd:sequence/>
+                <xsd:attribute name="name" type="xsd:string" use="required"/>
+                <xsd:attribute name="type" type="MetaFieldDataType" use="required"/>
+                <xsd:attribute name="can-be-input" type="xsd:boolean" use="required"/>
+                <xsd:attribute name="can-be-output" type="xsd:boolean" use="required"/>
+                <xsd:attribute name="is-required" type="xsd:boolean" use="optional"/>
+            </xsd:complexType>
+
+            <xsd:complexType name="MetaLink">
+                <xsd:sequence/>
+                <xsd:attribute name="name" type="xsd:string" use="required"/>
+                <xsd:attribute name="target" type="xsd:string" use="required"/>
+                <xsd:attribute name="cardinality" type="MetaLinkCardinality" use="required"/>
+            </xsd:complexType>
+
+            <xsd:simpleType name="MetaFieldDataType">
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="STRING"/>
+                    <xsd:enumeration value="DATETIME"/>
+                    <xsd:enumeration value="BOOLEAN"/>
+                    <xsd:enumeration value="DATE"/>
+                    <xsd:enumeration value="DECIMAL"/>
+                    <xsd:enumeration value="TIMEOFDAY"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+
+            <xsd:simpleType name="MetaLinkCardinality">
+                <xsd:restriction base="xsd:string">
+                    <!-- one-to-one, one-to-many, many-to-one, many-to-many -->
+                    <!-- <xsd:enumeration value="C_11"/> currently unsupported -->
+                    <xsd:enumeration value="C_1M"/>
+                    <!-- <xsd:enumeration value="C_M1"/> currently unsupported -->
+                    <!-- <xsd:enumeration value="C_MN"/> currently unsupported -->
+                </xsd:restriction>
+            </xsd:simpleType>
+
+            <!-- LOAD REQUEST -->
+            <xsd:element name="load-request">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="request-context" type="RequestContext" minOccurs="0" maxOccurs="1"/>
+                        <xsd:element name="tables" type="SeedDataDescription" minOccurs="1" maxOccurs="1"/>
+                    </xsd:sequence>
+                    <xsd:attribute name="root" type="xsd:string" use="required"/>
+                    <xsd:attribute name="region" type="xsd:string" use="required"/>
+                    <xsd:attribute name="language" type="xsd:string" use="required"/>
+                    <xsd:attribute name="timezone" type="xsd:string" use="required"/>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- LOAD RESPONSE -->
+            <xsd:element name="load-response">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="tables" type="LoadData" minOccurs="1" maxOccurs="1"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- SAVE REQUEST -->
+            <xsd:element name="save-request">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="request-context" type="RequestContext" minOccurs="0" maxOccurs="1"/>
+                        <xsd:element name="tables" type="SubmitData" minOccurs="1" maxOccurs="1"/>
+                        <xsd:element name="attachments" type="AttachmentList" minOccurs="0" maxOccurs="1"/>
+                    </xsd:sequence>
+                    <xsd:attribute name="root" type="xsd:string" use="required"/>
+                    <xsd:attribute name="region" type="xsd:string" use="required"/>
+                    <xsd:attribute name="language" type="xsd:string" use="required"/>
+                    <xsd:attribute name="timezone" type="xsd:string" use="required"/>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- SAVE RESPONSE -->
+            <xsd:element name="save-response">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="tables" type="UpdateData" minOccurs="1" maxOccurs="1" />
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- LOAD AND SAVE FAULTS -->
+            <xsd:element name="request-fault">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="message" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+        </xsd:schema>
+    </wsdl:types>
+
+    <wsdl:message name="CheckAliveRequest">
+        <wsdl:part element="tns:check-alive-request" name="request"/>
+    </wsdl:message>
+    <wsdl:message name="CheckAliveResponse">
+        <wsdl:part element="tns:check-alive-response" name="response"/>
+    </wsdl:message>
+
+    <wsdl:message name="GetMetadataRequest">
+        <wsdl:part element="tns:get-metadata-request" name="request"/>
+    </wsdl:message>
+    <wsdl:message name="GetMetadataResponse">
+        <wsdl:part element="tns:get-metadata-response" name="response"/>
+    </wsdl:message>
+
+    <wsdl:message name="LoadRequest">
+        <wsdl:part element="tns:load-request" name="request"/>
+    </wsdl:message>
+    <wsdl:message name="LoadResponse">
+        <wsdl:part element="tns:load-response" name="response"/>
+    </wsdl:message>
+
+    <wsdl:message name="SaveRequest">
+        <wsdl:part element="tns:save-request" name="request"/>
+    </wsdl:message>
+    <wsdl:message name="SaveResponse">
+        <wsdl:part element="tns:save-response" name="response"/>
+    </wsdl:message>
+
+    <wsdl:message name="RequestFault">
+        <wsdl:part element="tns:request-fault" name="request-fault"/>
+    </wsdl:message>
+
+    <wsdl:portType name="OpaDataServicePortType">
+        <wsdl:operation name="CheckAlive">
+            <wsdl:input message="tns:CheckAliveRequest"/>
+            <wsdl:output message="tns:CheckAliveResponse"/>
+        </wsdl:operation>
+        <wsdl:operation name="GetMetadata">
+            <wsdl:input message="tns:GetMetadataRequest"/>
+            <wsdl:output message="tns:GetMetadataResponse"/>
+        </wsdl:operation>
+        <wsdl:operation name="Load">
+            <wsdl:input message="tns:LoadRequest"/>
+            <wsdl:output message="tns:LoadResponse"/>
+            <wsdl:fault name="error" message="tns:RequestFault"/>
+        </wsdl:operation>
+        <wsdl:operation name="Save">
+            <wsdl:input message="tns:SaveRequest"/>
+            <wsdl:output message="tns:SaveResponse"/>
+            <wsdl:fault name="error" message="tns:RequestFault"/>
+        </wsdl:operation>
+    </wsdl:portType>
+
+    <wsdl:binding name="OpaDataServiceSOAP" type="tns:OpaDataServicePortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="CheckAlive">
+            <soap:operation soapAction="CheckAlive" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="GetMetadata">
+            <soap:operation soapAction="GetMetadata" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="Load">
+            <soap:operation soapAction="Load" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="error">
+                <soap:fault name="error" use="literal"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="Save">
+            <soap:operation soapAction="Save" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="error">
+                <soap:fault name="error" use="literal"/>
+            </wsdl:fault>
+        </wsdl:operation>
+    </wsdl:binding>
+
+    <wsdl:service name="OpaDataService">
+        <wsdl:port binding="tns:OpaDataServiceSOAP" name="OpaDataServicePort">
+            <soap:address location="https://server:1234/service"/>
+        </wsdl:port>
+    </wsdl:service>
+
+</wsdl:definitions>
