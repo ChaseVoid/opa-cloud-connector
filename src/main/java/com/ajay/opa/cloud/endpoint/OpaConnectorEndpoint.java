@@ -1,13 +1,11 @@
 package com.ajay.opa.cloud.endpoint;
 
-import com.ajay.opa.cloud.ws.*;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ws.server.endpoint.annotation.Endpoint;
-import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
-import org.springframework.ws.server.endpoint.annotation.RequestPayload;
-import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
+import com.oracle.xmlns.policyautomation.hub._12_0.metadata.types.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import javax.jws.WebMethod;
+import javax.jws.WebService;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -26,20 +24,13 @@ import java.util.Date;
  *
  * Created by ajay on 04/12/14.
  */
-@Endpoint
+@WebService
 public class OpaConnectorEndpoint implements OpaDataServicePortType {
 
     private static final String NAMESPACE_URI = "http://xmlns.oracle.com/policyautomation/hub/12.0/metadata/types";
 
-    private static final Logger LOGGER = Logger.getLogger(OpaConnectorEndpoint.class);
+    private static final Logger log = LogManager.getLogger(OpaConnectorEndpoint.class);
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-
-    private DataRepository repository;
-
-    @Autowired
-    public OpaConnectorEndpoint(DataRepository repository) {
-        this.repository = repository;
-    }
 
     /**
      * This method handles the CheckAliveRequests sent from the hub to check on
@@ -47,12 +38,10 @@ public class OpaConnectorEndpoint implements OpaDataServicePortType {
      * back to notify that the service is online and responding.
      */
     @Override
-    @PayloadRoot(namespace = NAMESPACE_URI, localPart = "check-alive-request")
-    @ResponsePayload
-    public CheckAliveResponse checkAlive(@RequestPayload CheckAliveRequest request) {
+    @WebMethod
+    public CheckAliveResponse checkAlive(CheckAliveRequest request) {
 
-        LOGGER.debug("OpaConnectorService: CheckAliveRequest made at " + DATE_FORMAT.format(new Date()));
-        repository.find("test1");
+        log.debug("OpaConnectorService: CheckAliveRequest made at " + DATE_FORMAT.format(new Date()));
 
         return new CheckAliveResponse();
     }
@@ -66,7 +55,7 @@ public class OpaConnectorEndpoint implements OpaDataServicePortType {
     @Override
     public GetMetadataResponse getMetadata(GetMetadataRequest request) {
 
-        LOGGER.debug("OpaConnectorService: generating GetMetadataResponse for GetMetadata request at " + DATE_FORMAT.format(new Date()));
+        log.debug("OpaConnectorService: generating GetMetadataResponse for GetMetadata request at " + DATE_FORMAT.format(new Date()));
 
         GetMetadataResponse metadata = null;//MetadataTool.buildMetadataResponse();
         return metadata;
@@ -80,12 +69,12 @@ public class OpaConnectorEndpoint implements OpaDataServicePortType {
     @Override
     public LoadResponse load(LoadRequest request) throws RequestFault_Exception {
 
-        LOGGER.debug("OpaConnectorService: generating LoadResponse for Load request at " + DATE_FORMAT.format(new Date()));
+        log.debug("OpaConnectorService: generating LoadResponse for Load request at " + DATE_FORMAT.format(new Date()));
 
         if (request.getRequestContext() != null && request.getRequestContext().getParameter().size() != 0) {
-            LOGGER.debug("Parameters specified by url on start session:");
+            log.debug("Parameters specified by url on start session:");
             for (RequestContextParam param : request.getRequestContext().getParameter())
-                LOGGER.debug("Name: " + param.getName() + ", Value: *****");
+                log.debug("Name: " + param.getName() + ", Value: *****");
         }
 
         LoadResponse response = null;//LoadTool.processRequest(request);
@@ -102,12 +91,12 @@ public class OpaConnectorEndpoint implements OpaDataServicePortType {
     @Override
     public SaveResponse save(SaveRequest request) throws RequestFault_Exception {
 
-        LOGGER.debug("OpaConnectorService: generating SaveResponse for Save request at " + DATE_FORMAT.format(new Date()));
+        log.debug("OpaConnectorService: generating SaveResponse for Save request at " + DATE_FORMAT.format(new Date()));
 
         if (request.getRequestContext() != null && request.getRequestContext().getParameter().size() != 0) {
-            LOGGER.debug("Parameters specified by url on start session:");
+            log.debug("Parameters specified by url on start session:");
             for (RequestContextParam param : request.getRequestContext().getParameter())
-                LOGGER.debug("Name: " + param.getName() + ", Value: *****");
+                log.debug("Name: " + param.getName() + ", Value: *****");
         }
 
         SaveResponse response = null;//SaveTool.processRequest(request);

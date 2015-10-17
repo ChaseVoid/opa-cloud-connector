@@ -7,34 +7,53 @@
     <artifactId>opa-cloud-connector</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-    <name>OPA Cloud Connector Spring-WS Application</name>
-    <url>http://www.springframework.org/spring-ws</url>
-
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.1.9.RELEASE</version>
-    </parent>
+    <name>OPA Cloud Connector WS Application</name>
+    <packaging>war</packaging>
 
     <dependencies>
-        <!-- tag::springws[] -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-ws</artifactId>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>wsdl4j</groupId>
-            <artifactId>wsdl4j</artifactId>
-            <version>1.6.3</version>
+            <groupId>com.sun.xml.ws</groupId>
+            <artifactId>jaxws-rt</artifactId>
+            <version>2.2.10</version>
         </dependency>
-        <!-- end::springws[] -->
+        <dependency>
+            <groupId>com.sun.xml.ws</groupId>
+            <artifactId>jaxws-tools</artifactId>
+            <version>2.2.10</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.4</version>
+        </dependency>
+        <!-- SFDC dependencies -->
+        <dependency>
+            <groupId>com.force.api</groupId>
+            <artifactId>force-wsc</artifactId>
+            <version>32.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.force.api</groupId>
+            <artifactId>force-partner-api</artifactId>
+            <version>32.0.0</version>
+        </dependency>
     </dependencies>
 
     <properties>
         <!-- use UTF-8 for everything -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <start-class>com.ajay.opa.cloud.Application</start-class>
     </properties>
 
     <build>
@@ -47,18 +66,15 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.3</version>
                     <configuration>
-                        <source>1.7</source>
-                        <target>1.7</target>
+                        <source>1.8</source>
+                        <target>1.8</target>
                     </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
             <!-- tag::wsdl[] -->
             <plugin>
                 <groupId>org.jvnet.jax-ws-commons</groupId>
@@ -66,7 +82,7 @@
                 <version>2.3</version>
                 <executions>
                     <execution>
-                        <id>wsimport</id>
+                        <phase>generate-sources</phase>
                         <goals>
                             <goal>wsimport</goal>
                         </goals>
@@ -74,15 +90,14 @@
                         <configuration>
                             <!--wsdls file directory -->
                             <wsdlDirectory>src/main/resources/wsdl</wsdlDirectory>
-                            <!-- which wsdl file -->
-                            <wsdlFiles>
-                                <wsdlFile>opa-cloud-connector.wsdl</wsdlFile>
-                            </wsdlFiles>
-                            <wsdlLocation>https://server:1234/service</wsdlLocation>
                             <!-- Keep generated files -->
                             <keep>true</keep>
                             <!-- Package name -->
-                            <packageName>com.ajay.opa.cloud.ws</packageName>
+                            <!--<packageName>com.ajay.opa.cloud.ws</packageName>-->
+
+                            <vmArgs>
+                                <vmArg>-Djavax.xml.accessExternalSchema=all</vmArg>
+                            </vmArgs>
                         </configuration>
                     </execution>
                 </executions>
@@ -92,6 +107,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.9.1</version>
                 <executions>
                     <execution>
                         <id>add-source</id>
@@ -107,20 +123,26 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.6</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>9.3.4.v20151007</version>
+                <configuration>
+                    <stopKey>die-jetty</stopKey>
+                    <stopPort>9999</stopPort>
+                    <scanIntervalSeconds>10</scanIntervalSeconds>
+                </configuration>
+            </plugin>
         </plugins>
+
+        <finalName>${project.artifactId}</finalName>
     </build>
-
-    <repositories>
-        <repository>
-            <id>spring-releases</id>
-            <url>https://repo.spring.io/libs-release</url>
-        </repository>
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>spring-releases</id>
-            <url>https://repo.spring.io/libs-release</url>
-        </pluginRepository>
-    </pluginRepositories>
 </project>

@@ -1,7 +1,12 @@
 package com.ajay.opa.cloud.endpoint;
 
-import org.apache.log4j.Logger;
 
+import com.ajay.opa.cloud.utils.InvalidBase64DataException;
+import com.ajay.opa.cloud.utils.ServicePropertiesEncrypter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import javax.crypto.IllegalBlockSizeException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -16,13 +21,16 @@ import java.util.Properties;
  */
 public final class ServiceProperties {
 
-    private final static Logger LOGGER = Logger.getLogger(ServiceProperties.class);
+    private final static Logger log = LogManager.getLogger(ServiceProperties.class);
     private static String PROPERTY_FILE = "configuration/service.properties";
     private static final Properties PROPERTIES = getProperties(PROPERTY_FILE);
 
     // PROPERTY NAMES
-    public static final String SERVICE_USERNAME = "service_username";
-    public static final String SERVICE_PASSWORD = "service_password";
+    public static final String SERVICE_USERNAME = "service.username";
+    public static final String SERVICE_PASSWORD = "service.password";
+
+    public static final String SFDC_USERNAME = "sfdc.username";
+    public static final String SFDC_PASSWORD = "sfdc.password";
 
     public static final String DATABASE_TYPE = "database_type";
     public static final String DATABASE_PORT = "database_port";
@@ -36,11 +44,11 @@ public final class ServiceProperties {
      * by the get() method.
      * @return A Properties object filled with
      */
-    private static Properties getProperties(String propertyFile) {
-        LOGGER.debug("Loading properties from " + propertyFile);
+    public static Properties getProperties(String propertyFile) {
+        log.debug("Loading properties from " + propertyFile);
 
         Properties properties = new Properties();
-        InputStream stream = ServiceProperties.class.getResourceAsStream(PROPERTY_FILE);
+        InputStream stream = ServiceProperties.class.getResourceAsStream(propertyFile);
 
         boolean success = false;
         String errorTemplate = null;
@@ -58,8 +66,8 @@ public final class ServiceProperties {
             errorTemplate = "Properties file '%s' could not be found.";
 
         if (!success) {
-            String errorMessage = String.format(errorTemplate, PROPERTY_FILE);
-            LOGGER.error(errorMessage);
+            String errorMessage = String.format(errorTemplate, propertyFile);
+            log.error(errorMessage);
             throw new RuntimeException(errorMessage);
         }
 
@@ -72,6 +80,24 @@ public final class ServiceProperties {
      * @return The property's value.
      */
     public static String get(String propertyName) {
-        return PROPERTIES.getProperty(propertyName);
+
+        String property = PROPERTIES.getProperty(propertyName);
+
+        if (propertyName.equals(SERVICE_USERNAME)
+                || propertyName.equals(SERVICE_PASSWORD)
+                || propertyName.equals(SFDC_USERNAME)
+                || propertyName.equals(SFDC_PASSWORD)) {
+            if (!ServicePropertiesEncrypter.isEncrypted(property))
+                log.warn("Username stored in service properties file is not encrypted. Run encryption tool on file to remedy this.");
+            else {
+                try {
+                    property = ServicePropertiesEncrypter.decrypt(property);
+                } catch (IllegalBlockSizeException | InvalidBase64DataException e) {
+                    log.error("Cannot decrypt username.");
+                }
+            }
+        }
+
+        return property;
     }
 }
