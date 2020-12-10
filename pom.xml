@@ -134,7 +134,7 @@
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <version>9.4.28.v20200408</version>
+                <version>11.0.0</version>
                 <configuration>
                     <stopKey>die-jetty</stopKey>
                     <stopPort>9999</stopPort>
